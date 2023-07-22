@@ -73,3 +73,13 @@ thiago2:x:1001:
 thiago3:x:1002:
 thiago@thiago-pc:~$
 ```
+
+# Incluindo usuários no sistema
+O nosso sistema precisa armazenar, de algum modo, as senhas dos usuários para realizar a verificação de acesso e permitir que eles tenham acesso ao sistema.
+
+Qual arquivo do Linux é utilizado para armazenar o hash das senhas dos usuários?
+
+> `/etc/shadow`: O `/etc/shadow` armazena o hash das senhas. É importante destacar que nenhum sistema moderno deve realizar o armazenamento de senhas.
+
+* O `/etc/passwd` corresponde ao banco de dados de usuários locais do sistema.
+* O `/etc/sudoers` armazena as configurações / permissões para a execução do sudo.
