@@ -178,3 +178,46 @@ thiago3:x:1002:
 projetos:x:1003:thiago3
 thiago@thiago-pc:~$
 ```
+# Entendendo o permissionamento dos arquivos e diretórios
+Regra: todo arquivo ou diretório pertence a um único usuário e a um único grupo.
+```
+thiago@thiago-pc:~$ touch novoteste
+thiago@thiago-pc:~$ ls -l novo*
+-rw-rw-r-- 1 thiago thiago 0 jul 22 16:08 novoteste
+```
+Note que o usuário `thiago` criou o arquivo `novoteste`, e ele pertence ao usuário `thiago` e ao grupo `thiago`.
+
+Veja como isso se aplica ao diretório `/var/local`:
+```
+thiago@thiago-pc:~$ ls -l /var
+total 48
+drwxr-xr-x  2 root root   4096 mai 10 00:00 backups
+drwxr-xr-x 15 root root   4096 mai  9 23:56 cache
+drwxrwxrwt  2 root root   4096 fev 17 17:23 crash
+drwxr-xr-x 42 root root   4096 mai  9 23:56 lib
+drwxrwsr-x  2 root staff  4096 abr 18  2022 local
+lrwxrwxrwx  1 root root      9 fev 17 17:19 lock -> /run/lock
+drwxrwxr-x 10 root syslog 4096 jul 22 14:52 log
+drwxrwsr-x  2 root mail   4096 fev 17 17:19 mail
+drwxr-xr-x  2 root root   4096 fev 17 17:19 opt
+lrwxrwxrwx  1 root root      4 fev 17 17:19 run -> /run
+drwxr-xr-x  5 root root   4096 fev 17 17:25 snap
+drwxr-xr-x  4 root root   4096 fev 17 17:24 spool
+drwxrwxrwt  7 root root   4096 jul 22 15:53 tmp
+drwxr-xr-x  3 root root   4096 mai  9 23:56 www
+```
+O diretório `/var/local` é do usuário `root`, mas pertence ao grupo `staff`.
+
+Observe o padrão de 10 letras no início: o primeiro caractere identifica se o objeto se trata de um diretório (d) ou de um arquivo (-). Os grupos de 3 letras seguintes configuram acesso de leitura (r), escrita (w) e execução/permissão para entrar no diretório (x). A primeira tríade de letras é para o usuário; a segunda tríade é para o grupo; e a terceira tríade é para qualquer usuário.
+
+As permissões podem ser representadas numericamente pela base octal (1 a 7):
+```
+7 = rwx (lê, escreve e executa/abre diretório)
+6 = rw- (lê e escreve)
+5 = r-x (lê e executa/abre diretório)
+4 = r-- (só lê)
+3 = -wx (escreve e executa/abre diretório)
+2 = -w- (só escreve)
+1 = --x (só executa/abre diretório)
+0 = --- (sem permissão)
+```
