@@ -221,3 +221,123 @@ As permissões podem ser representadas numericamente pela base octal (1 a 7):
 1 = --x (só executa/abre diretório)
 0 = --- (sem permissão)
 ```
+
+# Alterando as permissões, donos e grupos
+Cenário: criação do diretório `/projetos`:
+```
+thiago@thiago-pc:~$ mkdir /projetos
+mkdir: cannot create directory ‘/projetos’: Permission denied
+thiago@thiago-pc:~$ sudo mkdir /projetos
+thiago@thiago-pc:~$ sudo mkdir /projetos
+[sudo] password for thiago:
+thiago@thiago-pc:~$ ls -l /
+total 2097224
+lrwxrwxrwx   1 root root          7 fev 17 17:19 bin -> usr/bin
+...
+dr-xr-xr-x 176 root root          0 jul 22 14:51 proc
+drwxr-xr-x   2 root root       4096 jul 22 16:43 projetos
+...
+drwxr-xr-x  14 root root       4096 mai  9 23:56 var
+thiago@thiago-pc:~$
+```
+## Comando `chmod`
+Vamos limitar a leitura, escrita e execução do diretório `/projetos` apenas ao grupo ao dono e ao grupo do diretório com o comando `chmod`:
+```
+thiago@thiago-pc:~$ chmod 770 /projetos/
+chmod: changing permissions of '/projetos/': Operation not permitted
+thiago@thiago-pc:~$ sudo chmod 770 /projetos/
+thiago@thiago-pc:~$ ls -l /
+total 2097224
+...
+drwxrwx---   2 root root       4096 jul 22 16:43 projetos
+...
+thiago@thiago-pc:~$
+```
+Com essa configuração, somente o usuário/dono `root` ou algum usuário do grupo `root` pode acessar o diretório:
+```
+thiago@thiago-pc:~$ cd /projetos/
+-bash: cd: /projetos/: Permission denied
+thiago@thiago-pc:~$
+```
+Vamos acrescentar o usuário `thiago3` ao grupo `projetos`:
+```
+thiago@thiago-pc:~$ sudo usermod -aG projetos thiago3
+thiago@thiago-pc:~$ groups thiago3
+thiago3 : thiago3 projetos
+thiago@thiago-pc:~$
+```
+E acrescentar o usuário `thiago4`:
+```
+thiago@thiago-pc:~$ sudo adduser thiago4
+Adding user `thiago4' ...
+Adding new group `thiago4' (1001) ...
+Adding new user `thiago4' (1001) with group `thiago4' ...
+Creating home directory `/home/thiago4' ...
+Copying files from `/etc/skel' ...
+New password:
+Retype new password:
+passwd: password updated successfully
+Changing the user information for thiago4
+Enter the new value, or press ENTER for the default
+        Full Name []: Thiago Marcal
+        Room Number []:
+        Work Phone []:
+        Home Phone []:
+        Other []:
+Is the information correct? [Y/n] y
+thiago@thiago-pc:~$
+```
+## Comando `chown`
+Vamos mudar o dono do diretório `/projetos` com o comando `chown <novo dono> <diretório/arquivo>`:
+
+```
+thiago@thiago-pc:~$ sudo chown thiago /projetos/
+thiago@thiago-pc:~$ ls -l /
+total 2097224
+...
+drwxrwx---   2 thiago root       4096 jul 22 16:43 projetos
+...
+thiago@thiago-pc:~$
+```
+
+## Comando `chgrp`
+Para mudar o grupo, use o comando `chgrp`:
+```
+thiago@thiago-pc:~$ sudo chgrp thiago3 /projetos/
+thiago@thiago-pc:~$ ls -l /
+total 2097224
+...
+drwxrwx---   2 thiago thiago3       4096 jul 22 16:43 projetos
+...
+thiago@thiago-pc:~$
+```
+Mas o caminho mais rápido é separar o usuário e o grupo com dois pontos dentro do comando `chown`:
+```
+thiago@thiago-pc:~$ sudo chown thiago:projetos /projetos/
+thiago@thiago-pc:~$ ls -l /
+total 2097224
+...
+drwxrwx---   2 thiago projetos       4096 jul 22 16:43 projetos
+...
+thiago@thiago-pc:~$
+```
+
+## Cenário: criação de um arquivo na pasta `/projetos`
+```
+thiago@thiago-pc:~$ echo "projeto da nasa" > /projetos/proj1
+thiago@thiago-pc:~$ cd /projetos/
+thiago@thiago-pc:/projetos$ ls -l
+total 4
+-rw-rw-r-- 1 thiago thiago 16 jul 22 17:08 proj1
+thiago@thiago-pc:/projetos$
+```
+
+## Cenário: os usuários thiago3 e thiago4 podem (ou não) acessar a pasta `/projetos`
+O usuário `thiago3` é parte do grupo `projetos`, mas o usuário `thiago4` não faz parte:
+```
+thiago@thiago-pc:/projetos$ groups thiago3
+thiago3 : thiago3 projetos
+thiago@thiago-pc:/projetos$ groups thiago4
+thiago4 : thiago4
+thiago@thiago-pc:/projetos$
+```
