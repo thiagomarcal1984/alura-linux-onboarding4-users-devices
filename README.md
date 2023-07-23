@@ -631,3 +631,48 @@ python3.10/jammy-updates,jammy-security,now 3.10.6-1~22.04.2ubuntu1.1 amd64 [ins
 thiago@thiago-pc:~$
 ```
 > Note que onde estava escrito `upgradable`, agora está escrito `installed`.
+
+# Consultando a base instalada com o apt list
+Consultando se há algum pacote atualizável:
+```
+thiago@thiago-pc:~$ sudo apt list --upgradable
+Listing... Pronto
+thiago@thiago-pc:~$
+```
+Gerando a lista dos pacotes instalados:
+```
+thiago@thiago-pc:~$ sudo apt list | grep installed > lista-pacotes.txt
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+thiago@thiago-pc:~$ ls lista*
+lista-pacotes.txt
+thiago@thiago-pc:~$
+```
+Outra forma de gerar a lista:
+```
+thiago@thiago-pc:~$ sudo apt list --installed > lista2.txt
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+thiago@thiago-pc:~$ ls -l lista*
+-rw-rw-r-- 1 thiago thiago 44622 jul 23 16:10 lista2.txt
+-rw-rw-r-- 1 thiago thiago 44611 jul 23 16:07 lista-pacotes.txt
+```
+> Note que o tamanho do arquivo `lista2.txt` é maior porque contém a primeira com o texto `Listing... `, enquanto o arquivo `lista-pacotes.txt` não tem essa linha:
+>```
+>thiago@thiago-pc:~$ head -5 lista-pacotes.txt
+>adduser/jammy,now 3.118ubuntu5 all [installed,automatic]
+>amd64-microcode/jammy,now 3.20191218.1ubuntu2 amd64 [installed,automatic]
+>apache2-bin/jammy-updates,now 2.4.52-1ubuntu4.5 amd64 [installed,automatic]
+>apache2-data/jammy-updates,now 2.4.52-1ubuntu4.5 all [installed,automatic]
+>apache2-utils/jammy-updates,now 2.4.52-1ubuntu4.5 amd64 [installed,automatic]
+>
+>thiago@thiago-pc:~$ head -5 lista2.txt
+>Listing...
+>adduser/jammy,now 3.118ubuntu5 all [installed,automatic]
+>amd64-microcode/jammy,now 3.20191218.1ubuntu2 amd64 [installed,automatic]
+>apache2-bin/jammy-updates,now 2.4.52-1ubuntu4.5 amd64 [installed,automatic]
+>apache2-data/jammy-updates,now 2.4.52-1ubuntu4.5 all [installed,automatic]
+>thiago@thiago-pc:~$
+>```
