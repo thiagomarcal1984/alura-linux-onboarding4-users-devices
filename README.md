@@ -680,6 +680,8 @@ thiago@thiago-pc:~$ ls -l lista*
 # Instalando e particionando um novo disco
 1. Crie o disco fisicamente;
 2. Crie as partições no dispositivo;
+3. Formate o disco / defina o sistema de arquivos;
+4. Monte o disco.
 
 Desligando a máquina com o comando `poweroff`:
 ```
@@ -853,5 +855,72 @@ The partition table has been altered.
 Calling ioctl() to re-read partition table.
 Syncing disks.
 
+thiago@thiago-pc:~$
+```
+# Instalando o File System ext4
+A formatação do disco é feita com o comando `mkfs` (make file system). A formatação será realizada na partição `sdb1` (não no dispositivo `sdb`), usando o tipo de sistema de arquivos `ext4`:
+```
+thiago@thiago-pc:~$ sudo mkfs -t ext4 /dev/sdb1
+mke2fs 1.46.5 (30-Dec-2021)
+Creating filesystem with 1310464 4k blocks and 327680 inodes
+Filesystem UUID: 489a4478-c378-484b-8be4-e5ce49eadf83
+Superblock backups stored on blocks:
+        32768, 98304, 163840, 229376, 294912, 819200, 884736
+
+Allocating group tables: done
+Writing inode tables: done
+Creating journal (16384 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+thiago@thiago-pc:~$
+```
+
+Visualizando os tipos de sistema de arquivos instalado nos discos com `mount`:
+```
+thiago@thiago-pc:~$ mount | grep sd
+cgroup2 on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot)
+/dev/sda2 on /boot type ext4 (rw,relatime)
+thiago@thiago-pc:~$
+```
+> Repare que o disco rígido `sda` também usa o sistema de arquivos `ext4`, e que o disco rígido `sdb` não aparece.
+
+É possível a criação do sistema de arquivos na partição com os comandos específicos para cada tipo de sistema de arquivos:
+```
+thiago@thiago-pc:~$ sudo mkfs. <TAB>
+mkfs.bfs     mkfs.cramfs  mkfs.ext3    mkfs.fat     mkfs.msdos   mkfs.vfat
+mkfs.btrfs   mkfs.ext2    mkfs.ext4    mkfs.minix   mkfs.ntfs    mkfs.xfs
+thiago@thiago-pc:~$ sudo mkfs.ext <TAB>
+mkfs.ext2  mkfs.ext3  mkfs.ext4
+thiago@thiago-pc:~$ sudo mkfs.ext
+```
+
+> Note que o comando `mkfs -t ext4 /dev/sdb1` pode ser substituído por `mkfs.ext4 /dev/sdb1`:
+> ```
+> thiago@thiago-pc:~$ sudo mkfs.ext4 /dev/sdb1
+> mke2fs 1.46.5 (30-Dec-2021)
+> /dev/sdb1 contains a ext4 file system
+>         created on Sun Jul 23 16:55:21 2023
+> Proceed anyway? (y,N) y
+> Creating filesystem with 1310464 4k blocks and 327680 inodes
+> Filesystem UUID: 84337015-de3f-4f5a-ae1b-afc6c6c65e2e
+> Superblock backups stored on blocks:
+>         32768, 98304, 163840, 229376, 294912, 819200, 884736
+> 
+> Allocating group tables: done
+> Writing inode tables: done
+> Creating journal (16384 blocks): done
+> Writing superblocks and filesystem accounting information: done
+> 
+> thiago@thiago-pc:~$
+> ```
+
+## O comando `mount`
+
+O comando `mount` exibe todos os dispositivos montados (não apenas os discos):
+
+```
+thiago@thiago-pc:~$ mount | grep sd
+cgroup2 on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot)
+/dev/sda2 on /boot type ext4 (rw,relatime)
 thiago@thiago-pc:~$
 ```
