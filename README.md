@@ -451,3 +451,49 @@ total 4
 thiago@thiago-pc:/projetos$
 ```
 > Note que o arquivo `proj3` tem as mesmas permissões de leitura/escrita/execução do diretório `/projetos`, além de pertencer ao grupo `projetos` (não ao grupo `thiago`).
+
+# Links simbólicos e suas utilidades
+Links simbólicos são atalhos para diretórios ou arquivos. Eles são criado com o parâmetro `-s` do comando `ln`:
+```
+thiago@thiago-pc:~$ ln -s /projetos projetos
+thiago@thiago-pc:~$ ls -l
+total 20
+-rw-r--r--  1 thiago thiago  331 abr 22 14:28 00-installer-config.yaml
+drwxrwxr-x  3 thiago thiago 4096 mai  9 15:24 backup
+drwxrwxr-x  2 thiago thiago 4096 mai  9 15:36 bin
+drwxrwxr-x 12 thiago thiago 4096 mai  9 14:52 labs
+-rw-rw-r--  1 thiago thiago    0 jul 22 16:08 novoteste
+lrwxrwxrwx  1 thiago thiago    9 jul 23 14:24 projetos -> /projetos
+-rw-rw-r--  1 thiago thiago 2683 mai  9 14:47 teste.arq
+thiago@thiago-pc:~$ cd projetos
+thiago@thiago-pc:~/projetos$ pwd
+/home/thiago/projetos
+thiago@thiago-pc:~/projetos$ ls
+proj1  proj2  proj3
+thiago@thiago-pc:~/projetos$ ls /projetos/
+proj1  proj2  proj3
+thiago@thiago-pc:~/projetos$
+```
+
+> Perceba a letra `l` que aparece no lugar da letra `d` para diretório. Perceba também que do lado do nome do link simbólico está o caminho para o qual o link simbólico aponta: `projetos -> /projetos`.
+
+Criação de um link simbólico chamado `blaha` para o arquivo `/projetos/proj1`:
+```
+thiago@thiago-pc:~/projetos$ ln -s /projetos/proj1 blaha
+thiago@thiago-pc:~/projetos$ cat blaha
+projeto da nasa
+```
+A remoção do link simbólico **não** remove o arquivo original.
+```
+thiago@thiago-pc:~/projetos$ rm blaha
+thiago@thiago-pc:~/projetos$ cat /projetos/proj1
+projeto da nasa
+thiago@thiago-pc:~/projetos$ ln -s /projetos/proj1 blaha
+thiago@thiago-pc:~/projetos$ ls -l
+total 4
+lrwxrwxrwx 1 thiago projetos 15 jul 23 14:28 blaha -> /projetos/proj1
+-rw-rw---- 1 thiago thiago   16 jul 22 17:08 proj1
+-rw-rw-r-- 1 thiago thiago    0 jul 23 14:03 proj2
+-rw-rw-r-- 1 thiago projetos  0 jul 23 14:08 proj3
+thiago@thiago-pc:~/projetos$
+```
