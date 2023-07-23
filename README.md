@@ -676,3 +676,182 @@ thiago@thiago-pc:~$ ls -l lista*
 >apache2-data/jammy-updates,now 2.4.52-1ubuntu4.5 all [installed,automatic]
 >thiago@thiago-pc:~$
 >```
+
+# Instalando e particionando um novo disco
+1. Crie o disco fisicamente;
+2. Crie as partições no dispositivo;
+
+Desligando a máquina com o comando `poweroff`:
+```
+thiago@thiago-pc:~$ sudo poweroff
+[sudo] password for thiago:
+Connection to 192.168.18.254 closed by remote host.
+Connection to 192.168.18.254 closed.
+```
+> Como estamos usando o VirtualBox, criamos um disco rígido a mais antes de continuarmos a configuração dele no Ubuntu.
+
+Usamos o comando `lshw` para listar os hardwares disponíveis (o parâmetro `-c disk` lista apenas os discos):
+
+```
+thiago@thiago-pc:~$ sudo lshw -c disk
+  *-cdrom
+       description: DVD reader
+       product: CD-ROM
+       vendor: VBOX
+       physical id: 0.0.0
+       bus info: scsi@1:0.0.0
+       logical name: /dev/cdrom
+       logical name: /dev/sr0
+       version: 1.0
+       capabilities: removable audio dvd
+       configuration: ansiversion=5 status=nodisc
+  *-disk:0
+       description: ATA Disk
+       product: VBOX HARDDISK
+       vendor: VirtualBox
+       physical id: 0
+       bus info: scsi@2:0.0.0
+       logical name: /dev/sda
+       version: 1.0
+       serial: VB93f8f2d5-cbb758be
+       size: 25GiB (26GB)
+       capabilities: gpt-1.00 partitioned partitioned:gpt
+       configuration: ansiversion=5 guid=08a05fef-b21c-4d24-bdc4-b5a8336415f5 logicalsectorsize=512 sectorsize=512
+  *-disk:1
+       description: ATA Disk
+       product: VBOX HARDDISK
+       vendor: VirtualBox
+       physical id: 1
+       bus info: scsi@3:0.0.0
+       logical name: /dev/sdb
+       version: 1.0
+       serial: VBc5bfdfe3-66bf946b
+       size: 5GiB (5368MB)
+       configuration: ansiversion=5 logicalsectorsize=512 sectorsize=512
+thiago@thiago-pc:~$
+```
+> Há dois discos no computador: o `sda` e o `sdb`. 
+
+Se executarmos o `fdisk -l`, veremos que o disco `sda` tem 3 partições (`sda1`, `sda2` e `sda3`), enquanto o disco `sdb` não é particionado ainda:
+
+```
+thiago@thiago-pc:~$ sudo fdisk -l
+Disk /dev/loop0: 63,45 MiB, 66531328 bytes, 129944 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop1: 63,34 MiB, 66412544 bytes, 129712 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop2: 111,95 MiB, 117387264 bytes, 229272 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop3: 53,26 MiB, 55844864 bytes, 109072 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/loop4: 53,24 MiB, 55824384 bytes, 109032 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/sda: 25 GiB, 26843545600 bytes, 52428800 sectors
+Disk model: VBOX HARDDISK
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: gpt
+Disk identifier: 08A05FEF-B21C-4D24-BDC4-B5A8336415F5
+
+Device       Start      End  Sectors Size Type
+/dev/sda1     2048     4095     2048   1M BIOS boot
+/dev/sda2     4096  4198399  4194304   2G Linux filesystem
+/dev/sda3  4198400 52426751 48228352  23G Linux filesystem
+
+
+Disk /dev/sdb: 5 GiB, 5368709120 bytes, 10485760 sectors
+Disk model: VBOX HARDDISK
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+
+Disk /dev/mapper/ubuntu--vg-ubuntu--lv: 11,5 GiB, 12343836672 bytes, 24109056 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+thiago@thiago-pc:~$
+```
+
+Vamos criar a partição **no dispositivo** com `fdisk`:
+```
+thiago@thiago-pc:~$ sudo fdisk /dev/sdb
+
+Welcome to fdisk (util-linux 2.37.2).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+Device does not contain a recognized partition table.
+Created a new DOS disklabel with disk identifier 0x537e8275.
+
+Command (m for help):
+```
+> O único comando que você precisa decorar no `fdisk` é o `p`, que mostra a tabela de partição no dispositivo.
+
+Criando a nova partição com o assistente (use o comando `n`):
+```
+Command (m for help): n
+Partition type
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended (container for logical partitions)
+Select (default p): p
+Partition number (1-4, default 1):
+First sector (2048-10485759, default 2048):
+Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-10485759, default 10485759):
+
+Created a new partition 1 of type 'Linux' and of size 5 GiB.
+
+Command (m for help):
+```
+Sequência de criação da nova partição:
+1. Definimos o tipo de partição a ser criada (primária ou extendida);
+2. Numeramos ela com 1 (a primeira partição);
+3. Definimos o início da partição (logo depois do último setor com meta informações sobre a partição);
+4. Definimos o fim da partição.
+
+Visualizando a partição:
+```
+Command (m for help): p
+Disk /dev/sdb: 5 GiB, 5368709120 bytes, 10485760 sectors
+Disk model: VBOX HARDDISK
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x537e8275
+
+Device     Boot Start      End  Sectors Size Id Type
+/dev/sdb1        2048 10485759 10483712   5G 83 Linux
+
+Command (m for help):
+```
+Salvando as modificações da tabela de partição no disco:
+```
+Command (m for help): w
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+
+thiago@thiago-pc:~$
+```
