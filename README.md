@@ -984,3 +984,25 @@ UUID="84337015-de3f-4f5a-ae1b-afc6c6c65e2e" /media/disk2 ext4 defaults 0 2
 # Outra forma de disponibilizar o disco a cada reboot é assim:
 # /dev/sdb1 /media/disk2 ext4 defaults 0 2
 ```
+# Testando a inicialização e o acesso ao dispositivo
+O comando `umount` permite desmontar o dispositivo, seja a partir do dispositivo em si (`/dev/sdb1`) ou seja a partir do ponto de montagem (`/media/disk2`):
+```
+thiago@thiago-pc:~$ sudo umount /dev/sdb1
+
+...ou...
+
+thiago@thiago-pc:~$ sudo umount /media/disk2
+```
+
+O comando `mount -a` lê o arquivo `/etc/fstab` e tenta montar os dispositivos. Esse comando é sempre executado na inicialização, sem que percebamos.
+> Cuidado! Sempre execute o `mount -a` logo após a edição do arquivo `/etc/fstab`, para checar se a montagem está ok. Se o sistema operacional for reiniciado e o `etc/fstab` estiver mal configurado, você não conseguirá mais mexer no computador.
+
+```
+thiago@thiago-pc:~$ sudo mount -a
+
+thiago@thiago-pc:~$ mount | grep sd
+cgroup2 on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot)
+/dev/sda2 on /boot type ext4 (rw,relatime)
+/dev/sdb1 on /media/disk2 type ext4 (rw,relatime)
+thiago@thiago-pc:~$
+```
