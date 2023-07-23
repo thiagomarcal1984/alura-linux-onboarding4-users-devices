@@ -497,3 +497,12 @@ lrwxrwxrwx 1 thiago projetos 15 jul 23 14:28 blaha -> /projetos/proj1
 -rw-rw-r-- 1 thiago projetos  0 jul 23 14:08 proj3
 thiago@thiago-pc:~/projetos$
 ```
+
+# Gerenciamento de pacote com o apt
+Os comando `apt` e `apt-get` tem diferenças sutis, mas irrelevantes para o uso geral.
+
+O comando `apt search` serve pesquisar nomes de pacotes nas descrições de pacote. Essas descrições são atualizadas com o comando `apt update`, mas não refletem necessariamente nos pacotes que estão instalados no computador.
+
+O comando `apt show` mostra os detalhes de um determinado pacote.
+
+O comando `apt list --installed` lista os pacotes instalados no computador.
