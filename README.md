@@ -924,3 +924,63 @@ cgroup2 on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime,nsdelega
 /dev/sda2 on /boot type ext4 (rw,relatime)
 thiago@thiago-pc:~$
 ```
+# Montado o disco de forma automática (:etc:fstab)
+Para montar um disco, é necessário indicar um ponto de montagem, que é simplesmente um **diretório**. Geralmente os diretórios de discos são montados a partir de `/media`, mas você pode escolher o diretório de ponto de montagem que quiser.
+```
+thiago@thiago-pc:~$ sudo mkdir /media/disk2
+[sudo] password for thiago:
+thiago@thiago-pc:~$ ls /media/
+disk2
+thiago@thiago-pc:~$
+```
+Para montar a partição, use o comando `mount <partição> <ponto de montagem>`:
+```
+thiago@thiago-pc:~$ sudo mount /dev/sdb1 /media/disk2/
+
+thiago@thiago-pc:~$ mount | grep sd
+cgroup2 on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot)
+/dev/sda2 on /boot type ext4 (rw,relatime)
+/dev/sdb1 on /media/disk2 type ext4 (rw,relatime)
+thiago@thiago-pc:~$
+```
+> O diretório `/boot` é ponto de montagem da partição `sda2`, e o diretório `/media/disk2` é o ponto de montagem da partição `sdb1`.
+
+Esse tipo de montagem não persiste a cada reinicialização do sistema operacional.
+
+## O arquivo `/etc/fstab`
+Conteúdo do arquivo `/etc/fstab`:
+```
+thiago@thiago-pc:~$ more /etc/fstab
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+# / was on /dev/ubuntu-vg/ubuntu-lv during curtin installation
+/dev/disk/by-id/dm-uuid-LVM-HH0ChIi9KDxXdVXHwzNxu9hYfQqo3EEvbLmawsfxGf4d0aVAvQCp
+FK8QZ7ZrHLNv / ext4 defaults 0 1
+# /boot was on /dev/sda2 during curtin installation
+/dev/disk/by-uuid/b0790e73-5064-4fa8-80ab-bd30b3db96ca /boot ext4 defaults 0 1
+/swap.img       none    swap    sw      0       0
+```
+Note que o ponto de montagem `/boot` é precedido de um caminho que é identificado por uma identificador UUID. O UUID de todo dispositivo pode ser obtido a partir do comando `blkid`:
+
+```
+thiago@thiago-pc:~$ sudo blkid | grep sd
+/dev/sda2: UUID="b0790e73-5064-4fa8-80ab-bd30b3db96ca" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="1365ecb2-6587-4b8a-b60c-be488972da70"
+/dev/sda3: UUID="QhGwNR-OMek-I9ph-FtGc-Wagn-ivKC-IdiS3Z" TYPE="LVM2_member" PARTUUID="a5de5af7-0c16-4e45-b296-ab9e83466564"
+/dev/sdb1: UUID="84337015-de3f-4f5a-ae1b-afc6c6c65e2e" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="537e8275-01"
+/dev/sda1: PARTUUID="303137a3-8cfb-47db-af2c-1175c6a8f942"
+thiago@thiago-pc:~$
+```
+
+Faça backup do arquivo `/etc/fstab` e insira nele as informações da montagem do segundo HD:
+```
+# Uma maneira de disponibilizar o disco a cada reboot é assim:
+UUID="84337015-de3f-4f5a-ae1b-afc6c6c65e2e" /media/disk2 ext4 defaults 0 2
+
+# Outra forma de disponibilizar o disco a cada reboot é assim:
+# /dev/sdb1 /media/disk2 ext4 defaults 0 2
+```
