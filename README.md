@@ -341,3 +341,113 @@ thiago@thiago-pc:/projetos$ groups thiago4
 thiago4 : thiago4
 thiago@thiago-pc:/projetos$
 ```
+
+# Permissionamentos restritivos e especiais
+Os acessos mais **restritivos** são os que prevalecem.
+
+O usuário `thiago` criou um arquivo que pode ser lido por qualquer usuário (octal 664):
+```
+thiago@thiago-pc:/projetos$ ls -l /projetos/
+total 4
+-rw-rw-r-- 1 thiago thiago 16 jul 22 17:08 proj1
+thiago@thiago-pc:/projetos$ groups thiago3
+thiago3 : thiago3 projetos
+thiago@thiago-pc:/projetos$ su - thiago3
+Password:
+thiago3@thiago-pc:~$ cd /projetos/
+thiago3@thiago-pc:/projetos$ ls -l
+total 4
+-rw-rw-r-- 1 thiago thiago 16 jul 22 17:08 proj1
+thiago3@thiago-pc:/projetos$ cat proj1
+projeto da nasa
+thiago3@thiago-pc:/projetos$
+logout
+```
+Removendo a permissão de leitura para quem não for owner ou não for do grupo do arquivo `/projetos/proj1` (octal 660):
+```
+thiago@thiago-pc:/projetos$ sudo chmod 660 proj1
+[sudo] password for thiago:
+thiago@thiago-pc:/projetos$ ls -l
+total 4
+-rw-rw---- 1 thiago thiago 16 jul 22 17:08 proj1
+thiago@thiago-pc:/projetos$ su - thiago3
+Password:
+thiago3@thiago-pc:~$ cat /projetos/proj1
+cat: /projetos/proj1: Permission denied
+thiago3@thiago-pc:~$
+logout
+```
+## Usando letras ao invés de números ao aplicar o comando `chmod`
+|Comando|Owner| Group | Others/Everyone | As 3 colunas|
+|---|---|---|---|---|
+|Remover Leitura| chmod u-r | chmod g-r| chmod o-r| chmod a-r|
+|Adicionar Leitura| chmod u+r | chmod g+r| chmod o+r| chmod a+r|
+|Remover Escrita| chmod u-w | chmod g-w| chmod o-w| chmod a-w|
+|Adicionar Escrita| chmod u+w | chmod g+w| chmod o+w| chmod a+w|
+|Remover Execução| chmod u-x | chmod g-x| chmod o-x| chmod a-x|
+|Adicionar Execução| chmod u+x | chmod g+x| chmod o+x| chmod a+x|
+
+> Generalizando: `user@host:~$ chmod [ugoa][+-][rwx] arquivo`
+
+Adicionando acesso de leitura aos outros usuários:
+```
+thiago@thiago-pc:/projetos$ ls -l
+total 4
+-rw-rw---- 1 thiago thiago 16 jul 22 17:08 proj1
+thiago@thiago-pc:/projetos$ sudo chmod o+r proj1
+thiago@thiago-pc:/projetos$ ls -l
+total 4
+-rw-rw-r-- 1 thiago thiago 16 jul 22 17:08 proj1
+
+thiago@thiago-pc:/projetos$ su - thiago3
+Password:
+thiago3@thiago-pc:~$ cd /projetos/
+thiago3@thiago-pc:/projetos$ ls -l
+total 4
+-rw-rw-r-- 1 thiago thiago 16 jul 22 17:08 proj1
+thiago3@thiago-pc:/projetos$ cat proj1
+projeto da nasa
+thiago3@thiago-pc:/projetos$
+logout
+```
+Removendo acesso de leitura aos outros usuários:
+```
+thiago@thiago-pc:/projetos$ sudo chmod o-r proj1
+thiago@thiago-pc:/projetos$ ls -l
+total 4
+-rw-rw---- 1 thiago thiago 16 jul 22 17:08 proj1
+thiago@thiago-pc:/projetos$
+
+thiago@thiago-pc:/projetos$ su - thiago3
+Password:
+thiago3@thiago-pc:~$ cat /projetos/proj1
+cat: /projetos/proj1: Permission denied
+thiago3@thiago-pc:~$
+```
+## Usando o parâmetro `g+s` no comando `chmod`
+Ao aplicarmos a um diretório o parâmetro `g+s` (não `g+x`) com o comando `chmod`, os novos arquivos criados dentro desse diretório recebem as mesmas permissões do grupo ao qual o diretório pertence:
+```
+thiago@thiago-pc:/projetos$ ls -l /projetos/
+total 4
+-rw-rw---- 1 thiago thiago 16 jul 22 17:08 proj1
+thiago@thiago-pc:/projetos$ touch proj2
+thiago@thiago-pc:/projetos$ ls -l
+total 4
+-rw-rw---- 1 thiago thiago 16 jul 22 17:08 proj1
+-rw-rw-r-- 1 thiago thiago  0 jul 23 14:03 proj2
+thiago@thiago-pc:/projetos$ sudo chmod g+s /projetos/
+thiago@thiago-pc:/projetos$ ls -l /
+total 2097224
+...
+drwxrwsr--   2 thiago projetos       4096 jul 23 14:03 projetos
+...
+
+thiago@thiago-pc:/projetos$ touch proj3
+thiago@thiago-pc:/projetos$ ls -l /projetos/
+total 4
+-rw-rw---- 1 thiago thiago   16 jul 22 17:08 proj1
+-rw-rw-r-- 1 thiago thiago    0 jul 23 14:03 proj2
+-rw-rw-r-- 1 thiago projetos  0 jul 23 14:08 proj3
+thiago@thiago-pc:/projetos$
+```
+> Note que o arquivo `proj3` tem as mesmas permissões de leitura/escrita/execução do diretório `/projetos`, além de pertencer ao grupo `projetos` (não ao grupo `thiago`).
