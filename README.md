@@ -1006,3 +1006,142 @@ cgroup2 on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime,nsdelega
 /dev/sdb1 on /media/disk2 type ext4 (rw,relatime)
 thiago@thiago-pc:~$
 ```
+# Gerenciando serviços
+Checando o status/inicialização de serviços com `systemctl`:
+```
+thiago@thiago-pc:~$ systemctl status apache2
+● apache2.service - The Apache HTTP Server
+     Loaded: loaded (/lib/systemd/system/apache2.service; enabled; vendor prese>
+     Active: active (running) since Sun 2023-07-23 19:21:19 UTC; 20min ago
+       Docs: https://httpd.apache.org/docs/2.4/
+    Process: 693 ExecStart=/usr/sbin/apachectl start (code=exited, status=0/SUC>
+   Main PID: 767 (apache2)
+      Tasks: 55 (limit: 2219)
+     Memory: 7.5M
+        CPU: 419ms
+     CGroup: /system.slice/apache2.service
+             ├─767 /usr/sbin/apache2 -k start
+             ├─768 /usr/sbin/apache2 -k start
+             └─769 /usr/sbin/apache2 -k start
+
+jul 23 19:21:19 thiago-pc systemd[1]: Starting The Apache HTTP Server...
+jul 23 19:21:19 thiago-pc apachectl[751]: AH00558: apache2: Could not reliably >
+jul 23 19:21:19 thiago-pc systemd[1]: Started The Apache HTTP Server.
+```
+
+Checando o status/inicialização de serviços com `service` (ferramenta mais antiga):
+```
+thiago@thiago-pc:~$ service
+Usage: service < option > | --status-all | [ service_name [ command | --full-restart ] ]
+
+thiago@thiago-pc:~$ service apache2
+Usage: apache2 {start|stop|graceful-stop|restart|reload|force-reload}
+
+thiago@thiago-pc:~$ service apache2 status
+● apache2.service - The Apache HTTP Server
+     Loaded: loaded (/lib/systemd/system/apache2.service; enabled; vendor prese>
+     Active: active (running) since Sun 2023-07-23 19:43:21 UTC; 1min 17s ago
+       Docs: https://httpd.apache.org/docs/2.4/
+    Process: 1210 ExecStart=/usr/sbin/apachectl start (code=exited, status=0/SU>
+   Main PID: 1214 (apache2)
+      Tasks: 55 (limit: 2219)
+     Memory: 5.3M
+        CPU: 58ms
+     CGroup: /system.slice/apache2.service
+             ├─1214 /usr/sbin/apache2 -k start
+             ├─1215 /usr/sbin/apache2 -k start
+             └─1216 /usr/sbin/apache2 -k start
+
+jul 23 19:43:21 thiago-pc systemd[1]: Starting The Apache HTTP Server...
+jul 23 19:43:21 thiago-pc apachectl[1213]: AH00558: apache2: Could not reliably>
+jul 23 19:43:21 thiago-pc systemd[1]: Started The Apache HTTP Server.
+thiago@thiago-pc:~$
+```
+## Desabilitando serviços na inicialização
+Os parâmetros `enable` e `disable` no comando `systemctl` servem, respectivamente, para habilitar e desabilitar o carregamento de um serviço durante a inicialização do sistema operacional:
+
+```
+thiago@thiago-pc:~$ sudo systemctl disable apache2
+[sudo] password for thiago:
+Synchronizing state of apache2.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install disable apache2
+Removed /etc/systemd/system/multi-user.target.wants/apache2.service.
+thiago@thiago-pc:~$
+```
+
+Checando o status, vemos que o serviço `apache2` está desabilitado (disabled), embora esteja ativo (active):
+```
+thiago@thiago-pc:~$ sudo systemctl status apache2
+● apache2.service - The Apache HTTP Server
+     Loaded: loaded (/lib/systemd/system/apache2.service; disabled; vendor pres>
+     Active: active (running) since Sun 2023-07-23 19:43:21 UTC; 5min ago
+       Docs: https://httpd.apache.org/docs/2.4/
+   Main PID: 1214 (apache2)
+      Tasks: 55 (limit: 2219)
+     Memory: 5.3M
+        CPU: 120ms
+     CGroup: /system.slice/apache2.service
+             ├─1214 /usr/sbin/apache2 -k start
+             ├─1215 /usr/sbin/apache2 -k start
+             └─1216 /usr/sbin/apache2 -k start
+
+jul 23 19:43:21 thiago-pc systemd[1]: Starting The Apache HTTP Server...
+jul 23 19:43:21 thiago-pc apachectl[1213]: AH00558: apache2: Could not reliably>
+jul 23 19:43:21 thiago-pc systemd[1]: Started The Apache HTTP Server.
+```
+## Visualizando serviços ativos e inativos
+Use o comando `service --status-all`. Todos os serviços que estiverem com o sinal de `+` estão ativos, enquanto os com o sinal de `-` estão inativos:
+```
+thiago@thiago-pc:~$ service apache2 status
+● apache2.service - The Apache HTTP Server
+     Loaded: loaded (/lib/systemd/system/apache2.service; enabled; vendor prese>
+     Active: active (running) since Sun 2023-07-23 19:51:40 UTC; 3min 38s ago
+       Docs: https://httpd.apache.org/docs/2.4/
+   Main PID: 1094 (apache2)
+      Tasks: 55 (limit: 2219)
+     Memory: 7.4M
+        CPU: 115ms
+     CGroup: /system.slice/apache2.service
+             ├─1094 /usr/sbin/apache2 -k start
+             ├─1095 /usr/sbin/apache2 -k start
+             └─1096 /usr/sbin/apache2 -k start
+
+jul 23 19:51:40 thiago-pc systemd[1]: Starting The Apache HTTP Server...
+jul 23 19:51:40 thiago-pc apachectl[1093]: AH00558: apache2: Could not reliably>
+jul 23 19:51:40 thiago-pc systemd[1]: Started The Apache HTTP Server.
+thiago@thiago-pc:~$
+
+
+thiago@thiago-pc:~$ sudo service --status-all
+ [ - ]  apache-htcacheclean
+ [ + ]  apache2
+ [ + ]  apparmor
+ [ + ]  apport
+ [ - ]  console-setup.sh
+ [ + ]  cron
+ [ - ]  cryptdisks
+ [ - ]  cryptdisks-early
+ [ + ]  dbus
+ [ - ]  grub-common
+ [ - ]  hwclock.sh
+ [ + ]  irqbalance
+ [ - ]  iscsid
+ [ - ]  keyboard-setup.sh
+ [ + ]  kmod
+ [ - ]  lvm2
+ [ - ]  lvm2-lvmpolld
+ [ + ]  multipath-tools
+ [ - ]  open-iscsi
+ [ - ]  open-vm-tools
+ [ + ]  plymouth
+ [ + ]  plymouth-log
+ [ + ]  procps
+ [ - ]  rsync
+ [ - ]  screen-cleanup
+ [ + ]  ssh
+ [ + ]  udev
+ [ + ]  ufw
+ [ + ]  unattended-upgrades
+ [ - ]  uuidd
+thiago@thiago-pc:~$
+```
