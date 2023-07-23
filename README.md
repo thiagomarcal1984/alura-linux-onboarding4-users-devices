@@ -506,3 +506,128 @@ O comando `apt search` serve pesquisar nomes de pacotes nas descrições de paco
 O comando `apt show` mostra os detalhes de um determinado pacote.
 
 O comando `apt list --installed` lista os pacotes instalados no computador.
+
+# Informações e upgrade dos pacotes instalados
+Os comandos `apt remove` e `apt autoremove` são diferentes: 
+* `apt remove` exige o nome do pacote que será removido;
+* `apt autoremove` não exige parâmetros, e apaga pacotes que não são dependências para outros e que não foram apagados com o comando `apt remove`.
+
+```
+thiago@thiago-pc:~$ sudo apt remove apache2
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Os seguintes pacotes foram instalados automaticamente e já não são necessários:
+  apache2-bin apache2-data apache2-utils libapr1 libaprutil1
+  libaprutil1-dbd-sqlite3 libaprutil1-ldap liblua5.3-0 ssl-cert
+Utilize 'sudo apt autoremove' para os remover.
+Serão REMOVIDOS os seguintes pacotes:
+  apache2
+0 pacotes actualizados, 0 pacotes novos instalados, 1 a remover e 122 não actualizados.
+Após esta operação, será libertado 546 kB de espaço em disco.
+Deseja continuar? [S/n]
+```
+Executando o `apt autoremove`
+```
+thiago@thiago-pc:~$ sudo apt autoremove
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Serão REMOVIDOS os seguintes pacotes:
+  apache2-bin apache2-data apache2-utils libapr1 libaprutil1
+  libaprutil1-dbd-sqlite3 libaprutil1-ldap liblua5.3-0 ssl-cert
+0 pacotes actualizados, 0 pacotes novos instalados, 9 a remover e 122 não actualizados.
+Após esta operação, será libertado 7735 kB de espaço em disco.
+Deseja continuar? [S/n]
+
+(A ler a base de dados ... 74693 ficheiros e directórios actualmente instalados.)
+A remover apache2-bin (2.4.52-1ubuntu4.5) ...
+dpkg: aviso: ao remover apache2-bin, o directório '/var/lib/apache2' não estava vazio, por isso não foi removido
+A remover apache2-data (2.4.52-1ubuntu4.5) ...
+A remover apache2-utils (2.4.52-1ubuntu4.5) ...
+A remover libaprutil1-dbd-sqlite3:amd64 (1.6.1-5ubuntu4.22.04.1) ...
+A remover libaprutil1-ldap:amd64 (1.6.1-5ubuntu4.22.04.1) ...
+A remover libaprutil1:amd64 (1.6.1-5ubuntu4.22.04.1) ...
+A remover libapr1:amd64 (1.7.0-8ubuntu0.22.04.1) ...
+A remover liblua5.3-0:amd64 (5.3.6-1build1) ...
+A remover ssl-cert (1.1.2) ...
+A processar 'triggers' para man-db (2.10.2-1) ...
+A processar 'triggers' para libc-bin (2.35-0ubuntu3.1) ...
+thiago@thiago-pc:~$
+```
+
+O comando `apt --` (com dois hifens) é um atalho para ajuda do comando `apt`:
+```
+thiago@thiago-pc:~$ apt --
+apt 2.4.8 (amd64)
+Usage: apt [options] command
+
+apt is a commandline package manager and provides commands for
+searching and managing as well as querying information about packages.
+It provides the same functionality as the specialized APT tools,
+like apt-get and apt-cache, but enables options more suitable for
+interactive use by default.
+
+Most used commands:
+  list - list packages based on package names
+  search - search in package descriptions
+  show - show package details
+  install - install packages
+  reinstall - reinstall packages
+  remove - remove packages
+  autoremove - Remover automaticamente todos os pacotes não utilizados
+  update - update list of available packages
+  upgrade - upgrade the system by installing/upgrading packages
+  full-upgrade - upgrade the system by removing/installing/upgrading packages
+  edit-sources - edit the source information file
+  satisfy - satisfy dependency strings
+
+See apt(8) for more information about the available commands.
+Configuration options and syntax is detailed in apt.conf(5).
+Information about how to configure sources can be found in sources.list(5).
+Package and version choices can be expressed via apt_preferences(5).
+Security details are available in apt-secure(8).
+                                   Este APT tem Poderes de Super Vaca.
+thiago@thiago-pc:~$
+```
+
+O comando `apt upgrade` atualiza os pacotes instalados para as versões mais recentes. Cuidado ao fazer isso em servidores de produção: as aplicações pode ficar com problemas depois do upgrade.
+
+Listando os pacotes atualizáveis com o nome `python3.10`:
+```
+thiago@thiago-pc:~$ apt list --upgradable | grep python3.10
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+libpython3.10-minimal/jammy-updates,jammy-security 3.10.6-1~22.04.2ubuntu1.1 amd64 [upgradable from: 3.10.6-1~22.04.2ubuntu1]
+libpython3.10-stdlib/jammy-updates,jammy-security 3.10.6-1~22.04.2ubuntu1.1 amd64 [upgradable from: 3.10.6-1~22.04.2ubuntu1]
+libpython3.10/jammy-updates,jammy-security 3.10.6-1~22.04.2ubuntu1.1 amd64 [upgradable from: 3.10.6-1~22.04.2ubuntu1]
+python3.10-minimal/jammy-updates,jammy-security 3.10.6-1~22.04.2ubuntu1.1 amd64 [upgradable from: 3.10.6-1~22.04.2ubuntu1]
+python3.10/jammy-updates,jammy-security 3.10.6-1~22.04.2ubuntu1.1 amd64 [upgradable from: 3.10.6-1~22.04.2ubuntu1]
+thiago@thiago-pc:~$
+```
+Upgrade dos pacotes (no exemplo temos 123 pacotes atualizáveis):
+```
+thiago@thiago-pc:~$ thiago@thiago-pc:~$ apt list --upgradable | wc -l
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+123
+
+
+thiago@thiago-pc:~$ sudo apt upgrade
+...
+
+thiago@thiago-pc:~$ sudo apt list --installed | grep python3.10
+[sudo] password for thiago:
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+libpython3.10-minimal/jammy-updates,jammy-security,now 3.10.6-1~22.04.2ubuntu1.1 amd64 [installed,automatic]
+libpython3.10-stdlib/jammy-updates,jammy-security,now 3.10.6-1~22.04.2ubuntu1.1 amd64 [installed,automatic]
+libpython3.10/jammy-updates,jammy-security,now 3.10.6-1~22.04.2ubuntu1.1 amd64 [installed,automatic]
+python3.10-minimal/jammy-updates,jammy-security,now 3.10.6-1~22.04.2ubuntu1.1 amd64 [installed,automatic]
+python3.10/jammy-updates,jammy-security,now 3.10.6-1~22.04.2ubuntu1.1 amd64 [installed,automatic]
+thiago@thiago-pc:~$
+```
+> Note que onde estava escrito `upgradable`, agora está escrito `installed`.
